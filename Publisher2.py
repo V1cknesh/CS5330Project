@@ -7,11 +7,9 @@ consumer_secret = "fO0t6AmR2RvOoAV6aSnVzheDyzCDZz2GJmSWCDsIfjQUXk45fD"
 access_token = "1251440497257672705-datdho4HgxFZoj4AkA8c9cmi0skf8b"
 access_token_secret = "Gw9RnSjfeMzc4P415gbv494VO33fIPU5uGMCXg8qINLl1"
 
-
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth,wait_on_rate_limit=True)
-
 
 tweets_list = []
 text_query = 'A'
