@@ -5,7 +5,10 @@ import time
 
 class CountMinSketch:
 
-    def __init__(self, d, n, w):
+    def __init__(self, n, epsilon = 0.1, delta = 0.01):
+        w = int(np.e/epsilon) #bucket size
+        d = 1 + int(np.log(1./delta)) #no of hash
+
         self.n = n
         self.hash_functions_params = []
         for i in range(d):
@@ -59,61 +62,33 @@ class CountMinSketch:
             mask[i*i::i] = 0
         return np.argwhere(mask)
 
-CountMinSketch
 n = 50  #universe size
 epsilon = 0.1
-w = int(np.e/epsilon) #bucket size
-delta = 0.01
-d = 1+int(np.log(1./delta))
-
 real_counter = np.zeros(n)
-cs_counter = CountMinSketch(d, n, w)
+cs_counter = CountMinSketch(n, epsilon)
 
 m = 30000
 start = time.time()
-plt.show()
-
-
 for i in range(m):
     x = np.clip(int(np.random.normal(25, 7, 1)), 0, n-1)
     c = int(np.random.normal(1, 3, 1))
-    real_counter[x] += c
-
-    #inserting takes O(1)
-    cs_counter.insert(x, c)
     
-    #querying takes O(n) because O(1) for n times
-    # counter = cs_counter.get_counter()
-
-    # plt.plot(counter, 'r-')
-    # plt.plot(real_counter, 'b-')
-
-    # plt.draw()
-    # plt.pause(1e-17)
-    # plt.clf()
-    # time.sleep(0.001)
+    cs_counter.insert(x, c)
+    real_counter[x] += c
 
 
 #without query 0.45s for 30k 
 #with query 6.32s for 30k
 
-end = time.time()
-print(end-start)
+print(time.time()-start)
 
 counter = cs_counter.get_counter()
-
-plt.plot(counter, 'r-')
-plt.plot(real_counter, 'b-')
-plt.show()
 
 error = epsilon*m
 success_rate = float(np.sum(np.absolute(counter-real_counter)<error))/n
 
-print(np.argmax(counter), np.argmax(real_counter))
-print(counter)
-print(real_counter)
-
-print(n, w, d)
-print(error)
 print(success_rate)
 
+plt.plot(counter, 'r-')
+plt.plot(real_counter, 'b-')
+plt.show()

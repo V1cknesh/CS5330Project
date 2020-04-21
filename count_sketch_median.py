@@ -4,8 +4,9 @@ import time
 
 class SimpleCountSketch:
 
-    def __init__(self, n, w):
+    def __init__(self, n, epsilon=0.01):
         self.n = n
+        w = int(3./epsilon**2) #bucket size
         p = self.get_nearest_prime(w)
         a = np.random.randint(0, p)
         b = np.random.randint(0, p)
@@ -52,10 +53,10 @@ class SimpleCountSketch:
 class MedianCountSketch:
     cs_counters = []
 
-    def __init__(self, k, n, w):
+    def __init__(self, n, k, epsilon):
         #create k separate count sketches
         for i in range(k):
-            self.cs_counters.append(SimpleCountSketch(n, w))
+            self.cs_counters.append(SimpleCountSketch(n, epsilon))
 
     def insert(self, x, c):
         for i in range(k):
@@ -68,39 +69,34 @@ class MedianCountSketch:
 
         return np.median(res, axis = 0)
 
-
 #CountSketch
+#tradeoff between k and epsilon to get optimum speed and memory
 
 n = 50  #universe size
-epsilon = 0.01
-w = int(3./epsilon**2) #bucket size
 k = 8
+epsilon = 0.1
 
 real_counter = np.zeros(n)
-cs_counter = MedianCountSketch(k, n, w)
+cs_counter = MedianCountSketch(n, k, epsilon)
 
 start = time.time()
+
 m = 30000
 for i in range(m):
     x = np.clip(int(np.random.normal(16, 7, 1)), 0, n-1)
-    real_counter[x] += 1
-    cs_counter.insert(x, 1)
+    c = int(np.random.normal(1,2,1))
+    
+    cs_counter.insert(x, c)
+    real_counter[x] += c
 
 #0.58s for 30k
-
 print(time.time()-start)
 
 counter = cs_counter.get_counter()
 error = epsilon*np.sqrt(np.sum(np.square(real_counter)))
 success_rate = float(np.sum(np.absolute(counter-real_counter)<error))/n
 
-print(counter)
-print(real_counter)
-
-print(n, w)
-print(error)
 print(success_rate)
-
 
 plt.plot(counter, 'r-')
 plt.plot(real_counter, 'b-')
