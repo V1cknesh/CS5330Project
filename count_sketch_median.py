@@ -1,3 +1,6 @@
+import numpy as np 
+import matplotlib.pyplot as plt
+import time 
 
 class SimpleCountSketch:
 
@@ -21,9 +24,9 @@ class SimpleCountSketch:
         ind = self.hash(x, self.param)
         return self.signs[x]*self.c_table[ind]
 
-    def insert(self, x):
+    def insert(self, x, c):
         ind = self.hash(x, self.param)
-        self.c_table[ind] += self.signs[x]
+        self.c_table[ind] += self.signs[x]*c
 
     def hash(self, x, param):
         w, p, a, b = param
@@ -54,9 +57,9 @@ class MedianCountSketch:
         for i in range(k):
             self.cs_counters.append(SimpleCountSketch(n, w))
 
-    def insert(self, x):
+    def insert(self, x, c):
         for i in range(k):
-            self.cs_counters[i].insert(x)
+            self.cs_counters[i].insert(x, c)
 
     def get_counter(self):
         res = []
@@ -68,36 +71,37 @@ class MedianCountSketch:
 
 #CountSketch
 
-# n = 50  #universe size
-# epsilon = 0.01
-# w = int(3./epsilon**2) #bucket size
-# k = 8
+n = 50  #universe size
+epsilon = 0.01
+w = int(3./epsilon**2) #bucket size
+k = 8
 
-# real_counter = np.zeros(n)
-# cs_counter = MedianCountSketch(k, n, w)
+real_counter = np.zeros(n)
+cs_counter = MedianCountSketch(k, n, w)
 
-# start = time.time()
-# m = 30000
-# for i in range(m):
-#     x = np.clip(int(np.random.normal(16, 7, 1)), 0, n-1)
-#     real_counter[x] += 1
-#     cs_counter.insert(x)
+start = time.time()
+m = 30000
+for i in range(m):
+    x = np.clip(int(np.random.normal(16, 7, 1)), 0, n-1)
+    real_counter[x] += 1
+    cs_counter.insert(x, 1)
 
-# #0.58s for 30k
+#0.58s for 30k
 
-# print(time.time()-start)
+print(time.time()-start)
 
-# counter = cs_counter.get_counter()
-# error = epsilon*np.sqrt(np.sum(np.square(real_counter)))
-# success_rate = float(np.sum(np.absolute(counter-real_counter)<error))/n
+counter = cs_counter.get_counter()
+error = epsilon*np.sqrt(np.sum(np.square(real_counter)))
+success_rate = float(np.sum(np.absolute(counter-real_counter)<error))/n
 
-# print(counter)
-# print(real_counter)
+print(counter)
+print(real_counter)
 
-# plt.plot(counter)
-# plt.plot(real_counter)
-# plt.show()
+print(n, w)
+print(error)
+print(success_rate)
 
-# print(n, w)
-# print(error)
-# print(success_rate)
+
+plt.plot(counter, 'r-')
+plt.plot(real_counter, 'b-')
+plt.show()
