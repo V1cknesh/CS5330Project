@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import time 
 
 class SimpleCountSketch:
-
     def __init__(self, n, epsilon=0.01):
         self.n = n
         w = int(3./epsilon**2) #bucket size
@@ -66,38 +65,39 @@ class MedianCountSketch:
         res = []
         for i in range(k):
             res.append(self.cs_counters[i].get_counter())
-
         return np.median(res, axis = 0)
 
-#CountSketch
-#tradeoff between k and epsilon to get optimum speed and memory
 
-n = 50  #universe size
-k = 8
-epsilon = 0.1
+if __name__ == '__main__':
+    #CountSketch
+    #tradeoff between k and epsilon to get optimum speed and memory
 
-real_counter = np.zeros(n)
-cs_counter = MedianCountSketch(n, k, epsilon)
+    n = 50  #universe size
+    k = 8
+    epsilon = 0.1
 
-start = time.time()
+    real_counter = np.zeros(n)
+    cs_counter = MedianCountSketch(n, k, epsilon)
 
-m = 30000
-for i in range(m):
-    x = np.clip(int(np.random.normal(16, 7, 1)), 0, n-1)
-    c = int(np.random.normal(1,2,1))
-    
-    cs_counter.insert(x, c)
-    real_counter[x] += c
+    start = time.time()
 
-#0.58s for 30k
-print(time.time()-start)
+    m = 30000
+    for i in range(m):
+        x = np.clip(int(np.random.normal(16, 7, 1)), 0, n-1)
+        c = int(np.random.normal(1,2,1))
+        
+        cs_counter.insert(x, c)
+        real_counter[x] += c
 
-counter = cs_counter.get_counter()
-error = epsilon*np.sqrt(np.sum(np.square(real_counter)))
-success_rate = float(np.sum(np.absolute(counter-real_counter)<error))/n
+    #0.58s for 30k
+    print(time.time()-start)
 
-print(success_rate)
+    counter = cs_counter.get_counter()
+    error = epsilon*np.sqrt(np.sum(np.square(real_counter)))
+    success_rate = float(np.sum(np.absolute(counter-real_counter)<error))/n
 
-plt.plot(counter, 'r-')
-plt.plot(real_counter, 'b-')
-plt.show()
+    print(success_rate)
+
+    plt.plot(counter, 'r-')
+    plt.plot(real_counter, 'b-')
+    plt.show()
