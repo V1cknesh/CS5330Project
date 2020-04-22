@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import time 
 
 class SimpleCountSketch:
+
     def __init__(self, n, epsilon=0.01):
         self.n = n
         w = int(3./epsilon**2) #bucket size
@@ -50,20 +51,21 @@ class SimpleCountSketch:
             return None
 
 class MedianCountSketch:
-    cs_counters = []
 
     def __init__(self, n, k, epsilon):
         #create k separate count sketches
-        for i in range(k):
+        self.k = k
+        self.cs_counters = []
+        for i in range(self.k):
             self.cs_counters.append(SimpleCountSketch(n, epsilon))
 
     def insert(self, x, c):
-        for i in range(k):
+        for i in range(self.k):
             self.cs_counters[i].insert(x, c)
 
     def get_counter(self):
         res = []
-        for i in range(k):
+        for i in range(self.k):
             res.append(self.cs_counters[i].get_counter())
         return np.median(res, axis = 0)
 
