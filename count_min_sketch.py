@@ -62,33 +62,35 @@ class CountMinSketch:
             mask[i*i::i] = 0
         return np.argwhere(mask)
 
-n = 50  #universe size
-epsilon = 0.1
-real_counter = np.zeros(n)
-cs_counter = CountMinSketch(n, epsilon)
 
-m = 30000
-start = time.time()
-for i in range(m):
-    x = np.clip(int(np.random.normal(25, 7, 1)), 0, n-1)
-    c = int(np.random.normal(1, 3, 1))
-    
-    cs_counter.insert(x, c)
-    real_counter[x] += c
+if __name__ == '__main__':
+    n = 50  #universe size
+    epsilon = 0.1
+    real_counter = np.zeros(n)
+    cs_counter = CountMinSketch(n, epsilon)
+
+    m = 30000
+    start = time.time()
+    for i in range(m):
+        x = np.clip(int(np.random.normal(25, 7, 1)), 0, n-1)
+        c = int(np.random.normal(1, 3, 1))
+        
+        cs_counter.insert(x, c)
+        real_counter[x] += c
 
 
-#without query 0.45s for 30k 
-#with query 6.32s for 30k
+    #without query 0.45s for 30k 
+    #with query 6.32s for 30k
 
-print(time.time()-start)
+    print(time.time()-start)
 
-counter = cs_counter.get_counter()
+    counter = cs_counter.get_counter()
 
-error = epsilon*m
-success_rate = float(np.sum(np.absolute(counter-real_counter)<error))/n
+    error = epsilon*m
+    success_rate = float(np.sum(np.absolute(counter-real_counter)<error))/n
 
-print(success_rate)
+    print(success_rate)
 
-plt.plot(counter, 'r-')
-plt.plot(real_counter, 'b-')
-plt.show()
+    plt.plot(counter, 'r-')
+    plt.plot(real_counter, 'b-')
+    plt.show()
