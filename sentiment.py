@@ -87,11 +87,11 @@ class MyStreamListener(tweepy.StreamListener):
 #          'moulton', 'ojeda', 'rourke', 'deval', 'ryan', 'bernie', 'sestak', 'steyer', 'swalwell', 
 #          'warren', 'williamson', 'yang']
 
-# topics = ['pelosi', 'biden', 'bloomberg', 'booker', 'buttigieg', 'castro', 'blasio', 'delaney',
-#          'gabbard', 'gillibrand', 'harris', 'klobuchar', 'rourke', 'bernie', 'steyer',  
-#          'warren', 'williamson', 'yang']
+topics = ['pelosi', 'biden', 'bloomberg', 'booker', 'buttigieg', 'castro', 'blasio', 'delaney',
+         'gabbard', 'gillibrand', 'harris', 'klobuchar', 'rourke', 'bernie', 'steyer',  
+         'warren', 'williamson', 'yang']
 
-topics = ['corona', 'leehsienloong']
+# topics = ['corona', 'leehsienloong']
 
 counts = np.zeros((3, len(topics)))
 myStreamListener = MyStreamListener()
