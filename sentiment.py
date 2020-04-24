@@ -52,9 +52,7 @@ class MyStreamListener(tweepy.StreamListener):
                 counts[1, i] += sentiment
                 counts[2, i] += likes
 
-                csketch_counts.insert(i, 1)
-                csketch_sentiments.insert(i, sentiment)
-                csketch_likes.insert(i, likes)
+                csketch.insert(i, np.array([1, sentiment, likes]))
 
         a[0].set_title('counts')
         a[1].set_title('sentiments')
@@ -64,10 +62,11 @@ class MyStreamListener(tweepy.StreamListener):
         a[1].plot(np.arange(counts.shape[1]), counts[1], 'b')
         a[2].plot(np.arange(counts.shape[1]), counts[2], 'b')
 
-        a[0].plot(np.arange(counts.shape[1]), csketch_counts.get_counter(), 'r')
-        a[1].plot(np.arange(counts.shape[1]), csketch_sentiments.get_counter(), 'r')
-        a[2].plot(np.arange(counts.shape[1]), csketch_likes.get_counter(), 'r')
+        all_val = csketch.query_all()
 
+        a[0].plot(np.arange(counts.shape[1]), all_val[:, 0], 'r')
+        a[1].plot(np.arange(counts.shape[1]), all_val[:, 1], 'r')
+        a[2].plot(np.arange(counts.shape[1]), all_val[:, 2], 'r')
 
         a[0].set_xticks(np.arange(counts.shape[1]))
         a[1].set_xticks(np.arange(counts.shape[1]))
@@ -83,34 +82,35 @@ class MyStreamListener(tweepy.StreamListener):
         
         time.sleep(0.1)
 
-topics = ['trump', 'biden', 'bloomberg', 'bennet', 'booker', 'bullock', 'buttigieg', 'castro', 'blasio', 'delaney',
-         'gabbard', 'gillibrand', 'mike gravel', 'harris', 'hickenlooper', 'inslee', 'klobuchar', 'messam', 
-         'moulton', 'ojeda', 'rourke', 'deval', 'ryan', 'bernie', 'sestak', 'steyer', 'swalwell', 
-         'warren', 'williamson', 'yang']
+# topics = ['trump', 'biden', 'bloomberg', 'bennet', 'booker', 'bullock', 'buttigieg', 'castro', 'blasio', 'delaney',
+#          'gabbard', 'gillibrand', 'mike gravel', 'harris', 'hickenlooper', 'inslee', 'klobuchar', 'messam', 
+#          'moulton', 'ojeda', 'rourke', 'deval', 'ryan', 'bernie', 'sestak', 'steyer', 'swalwell', 
+#          'warren', 'williamson', 'yang']
+
+# topics = ['pelosi', 'biden', 'bloomberg', 'booker', 'buttigieg', 'castro', 'blasio', 'delaney',
+#          'gabbard', 'gillibrand', 'harris', 'klobuchar', 'rourke', 'bernie', 'steyer',  
+#          'warren', 'williamson', 'yang']
+
+topics = ['corona', 'leehsienloong']
 
 counts = np.zeros((3, len(topics)))
 myStreamListener = MyStreamListener()
 myStream = tweepy.Stream(auth = api.auth, listener=myStreamListener)
 
-csketch_counts = MedianCountSketch(len(topics), 8, 0.1)
-csketch_sentiments = MedianCountSketch(len(topics), 8, 0.1)
-csketch_likes = MedianCountSketch(len(topics), 8, 0.1)
+csketch = MedianCountSketch(len(topics), 3, 8, 0.1)
 
-# csketch_counts = CountMinSketch(len(topics), 0.1)
-# csketch_sentiments = CountMinSketch(len(topics), 0.1)
-# csketch_likes = CountMinSketch(len(topics), 0.1)
+#cannot handle negative values
+# csketch = CountMinSketch(len(topics), 3, 0.1)
 
 plt.show()
 fig, a =  plt.subplots(3, 1)
 
 print('node starting to track')
 
-
-myStream.filter(track=topics)
-# while True:
-#     try:
-#         myStream.filter(track=topics)
-#     except:
-#         continue
+while True:
+    try:
+        myStream.filter(track=topics)
+    except:
+        continue
 
 plt.show()

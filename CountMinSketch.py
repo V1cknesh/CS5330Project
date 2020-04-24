@@ -62,6 +62,7 @@ if __name__ == '__main__':
     f1 = file.readlines()
     for score in f1:
         sketch.update(sentimentToInteger(float(score)), 1)
+        
 
     print(sketch.get(500))
 

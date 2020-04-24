@@ -4,8 +4,9 @@ import time
 
 class SimpleCountSketch:
 
-    def __init__(self, n, epsilon=0.01):
+    def __init__(self, n, ch, epsilon=0.01):
         self.n = n
+        self.ch = ch
         w = int(3./epsilon**2) #bucket size
         p = self.get_nearest_prime(w)
         a = np.random.randint(0, p)
@@ -13,10 +14,10 @@ class SimpleCountSketch:
         self.param = [w, p, a, b]
         self.signs = np.ones(n)
         self.signs[np.random.sample([n]) < 0.5] = -1
-        self.c_table = np.zeros(w)
+        self.c_table = np.zeros((w, ch))
 
-    def get_counter(self):
-        counter = np.zeros(self.n)
+    def query_all(self):
+        counter = np.zeros((self.n, self.ch))
         for i in range(self.n):
             counter[i] = self.query(i)
         return counter
@@ -52,21 +53,21 @@ class SimpleCountSketch:
 
 class MedianCountSketch:
 
-    def __init__(self, n, k, epsilon):
+    def __init__(self, n, ch, k, epsilon):
         #create k separate count sketches
         self.k = k
         self.cs_counters = []
         for i in range(self.k):
-            self.cs_counters.append(SimpleCountSketch(n, epsilon))
+            self.cs_counters.append(SimpleCountSketch(n, ch, epsilon))
 
     def insert(self, x, c):
         for i in range(self.k):
             self.cs_counters[i].insert(x, c)
 
-    def get_counter(self):
+    def query_all(self):
         res = []
         for i in range(self.k):
-            res.append(self.cs_counters[i].get_counter())
+            res.append(self.cs_counters[i].query_all())
         return np.median(res, axis = 0)
 
 
@@ -77,16 +78,17 @@ if __name__ == '__main__':
     n = 50  #universe size
     k = 8
     epsilon = 0.1
+    ch = 2
 
-    real_counter = np.zeros(n)
-    cs_counter = MedianCountSketch(n, k, epsilon)
+    real_counter = np.zeros((n,ch))
+    cs_counter = MedianCountSketch(n, ch, k, epsilon)
 
     start = time.time()
 
     m = 30000
     for i in range(m):
         x = np.clip(int(np.random.normal(16, 7, 1)), 0, n-1)
-        c = int(np.random.normal(1,2,1))
+        c = np.random.normal(1,2,ch)
         
         cs_counter.insert(x, c)
         real_counter[x] += c
@@ -94,9 +96,9 @@ if __name__ == '__main__':
     #0.58s for 30k
     print(time.time()-start)
 
-    counter = cs_counter.get_counter()
+    counter = cs_counter.query_all()
     error = epsilon*np.sqrt(np.sum(np.square(real_counter)))
-    success_rate = float(np.sum(np.absolute(counter-real_counter)<error))/n
+    success_rate = float(np.sum(np.absolute(counter-real_counter)<error))/(n*ch)
 
     print(success_rate)
 
