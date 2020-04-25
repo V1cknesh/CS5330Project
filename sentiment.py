@@ -7,7 +7,7 @@ import time
 import matplotlib.pyplot as plt
 
 from count_min_sketch import CountMinSketch
-from count_sketch_median import MedianCountSketch
+from count_sketch_median import CountMedianSketch
 
 consumer_key = "ew0pmbxpjcfgMTSZcywA0Fgb7"
 consumer_secret = "fO0t6AmR2RvOoAV6aSnVzheDyzCDZz2GJmSWCDsIfjQUXk45fD"
@@ -97,7 +97,7 @@ counts = np.zeros((3, len(topics)))
 myStreamListener = MyStreamListener()
 myStream = tweepy.Stream(auth = api.auth, listener=myStreamListener)
 
-csketch = MedianCountSketch(len(topics), 3, 8, 0.1)
+csketch = CountMedianSketch(len(topics), 3, 8, 0.1)
 
 #cannot handle negative values
 # csketch = CountMinSketch(len(topics), 3, 0.1)

@@ -40,7 +40,6 @@ class CountMinSketch:
         return min_val
 
     def insert(self, x, c):
-
         self.c_table[self.arange_ind, self.hash_table[x]] += c
 
     def hash(self, x, param):
