@@ -30,14 +30,13 @@ class MyStreamListener(tweepy.StreamListener):
     def on_status(self, status):
         if status.lang != 'en': return
         text = status.text.lower()
-        print(text)        
+        print(text) 
 
         try:
             likes = status.retweeted_status.favorite_count
         except:
             likes = status.favorite_count
         
-
         try:
             sentiment = get_sentiment(text)
         except:
@@ -45,28 +44,35 @@ class MyStreamListener(tweepy.StreamListener):
 
         for i in range(len(topics)):
             topic = topics[i]
-            if topic in text:
-                #send packet to counter
-                msg = [topic, sentiment]
-                counts[0, i] += 1
-                counts[1, i] += sentiment
-                counts[2, i] += likes
+            subtopics = topic.split(' ')
+            for sub in subtopics:
+                if sub in text:
+                    #send packet to counter
+                    counts[0, i] += 1
+                    counts[1, i] += sentiment
+                    counts[2, i] += likes
 
-                csketch.insert(i, np.array([1, sentiment, likes]))
+                    csketch.insert(i, np.array([1, sentiment, likes]))
+                    break
 
         a[0].set_title('counts')
         a[1].set_title('sentiments')
         a[2].set_title('likes')
 
-        a[0].plot(np.arange(counts.shape[1]), counts[0], 'b')
-        a[1].plot(np.arange(counts.shape[1]), counts[1], 'b')
-        a[2].plot(np.arange(counts.shape[1]), counts[2], 'b')
+        a[0].grid()
+        a[1].grid()
+        a[2].grid()
+
 
         all_val = csketch.query_all()
 
         a[0].plot(np.arange(counts.shape[1]), all_val[:, 0], 'r')
         a[1].plot(np.arange(counts.shape[1]), all_val[:, 1], 'r')
         a[2].plot(np.arange(counts.shape[1]), all_val[:, 2], 'r')
+
+        a[0].plot(np.arange(counts.shape[1]), counts[0], 'b--')
+        a[1].plot(np.arange(counts.shape[1]), counts[1], 'b--')
+        a[2].plot(np.arange(counts.shape[1]), counts[2], 'b--')
 
         a[0].set_xticks(np.arange(counts.shape[1]))
         a[1].set_xticks(np.arange(counts.shape[1]))
@@ -80,18 +86,24 @@ class MyStreamListener(tweepy.StreamListener):
         a[1].cla()
         a[2].cla()
         
+        print(np.sum(counts, axis = 1))
         time.sleep(0.1)
 
-# topics = ['trump', 'biden', 'bloomberg', 'bennet', 'booker', 'bullock', 'buttigieg', 'castro', 'blasio', 'delaney',
-#          'gabbard', 'gillibrand', 'mike gravel', 'harris', 'hickenlooper', 'inslee', 'klobuchar', 'messam', 
-#          'moulton', 'ojeda', 'rourke', 'deval', 'ryan', 'bernie', 'sestak', 'steyer', 'swalwell', 
+# topics = ['bloomberg', 'bennet', 'bernie', 'booker', 'bullock', 'buttigieg', 'castro', 'blasio', 'delaney',
+#          'gabbard', 'gillibrand', 'harris', 'hickenlooper', 'inslee', 'klobuchar', 'messam', 
+#          'moulton', 'ojeda', 'rourke', 'deval', 'ryan', 'sestak', 'steyer', 'swalwell', 
+#          'warren', 'williamson', 'yanggang']
+
+topics = ['stacey abrams', 'michelle obama', 'tammy baldwin', 'cory booker', 'sherrod brown', 'pete buttigieg', 'bob casey', 'julian castro', 'catherine cortez mastro', 'val demings', 'tammy duckworth',
+'kamala harris', 'maggie hassan', 'jahana hayes', 'doug jones', 'laura kelly', 'amy klobuchar', 'keisha lance bottoms', 'brenda lawrence', 'michelle lunjam grisham', 'gavin newsom', 'susan rice',
+'terri sewell', 'jeanne shaheen', 'elizabeth warren', 'gretchen whitmer', 'andrew yang', 'sally yates'
+]
+
+print(len(topics))
+
+# topics = ['bloomberg', 'booker', 'buttigieg', 'castro', 'blasio', 'delaney',
+#          'gabbard', 'gillibrand', 'harris', 'klobuchar', 'rourke', 'bernie', 'steyer',  
 #          'warren', 'williamson', 'yang']
-
-topics = ['pelosi', 'biden', 'bloomberg', 'booker', 'buttigieg', 'castro', 'blasio', 'delaney',
-         'gabbard', 'gillibrand', 'harris', 'klobuchar', 'rourke', 'bernie', 'steyer',  
-         'warren', 'williamson', 'yang']
-
-# topics = ['corona', 'leehsienloong']
 
 counts = np.zeros((3, len(topics)))
 myStreamListener = MyStreamListener()
