@@ -6,7 +6,7 @@ import time
 class CountMinSketch:
 
     def __init__(self, n, ch = 1, epsilon = 0.1, delta = 0.01):
-        w = int(np.e/epsilon) #bucket size
+        w = int(2./epsilon) #bucket size
         d = 1 + int(np.log(1./delta)) #no of hash
 
         self.n = n

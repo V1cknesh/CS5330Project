@@ -53,13 +53,12 @@ class SimpleCountSketch:
 
 class CountMedianSketch:
 
-    def __init__(self, n, ch, d, epsilon=0.01):
+    def __init__(self, n, ch, epsilon=0.1, delta = 0.01):
         self.n = n
         self.ch = ch
         w = int(3./epsilon**2) #bucket size
-
-        self.signs = np.ones(n)
-        self.signs[np.random.sample([n]) < 0.5] = -1
+        d = int(20*np.log(1./delta))
+        
 
         self.hash_functions_params = []
         for i in range(d):
@@ -69,6 +68,9 @@ class CountMedianSketch:
             self.hash_functions_params.append([w, p, a, b])
 
         self.c_table = np.zeros((d, w, ch))
+
+        self.signs = np.ones((n, d))
+        self.signs[np.random.sample([n, d]) < 0.5] = -1
 
         self.hash_table = np.zeros((n, d), dtype=np.int32)
         for i in range(n):
@@ -85,11 +87,11 @@ class CountMedianSketch:
 
     def query(self, x):
         #query one item
-        min_val = np.median(self.signs[x]*self.c_table[self.arange_ind, self.hash_table[x]], axis = 0)
+        min_val = np.median(np.multiply(self.signs[x][:, np.newaxis],self.c_table[self.arange_ind, self.hash_table[x]]), axis = 0)
         return min_val
 
     def insert(self, x, c):
-        self.c_table[self.arange_ind, self.hash_table[x]] += self.signs[x]*c
+        self.c_table[self.arange_ind, self.hash_table[x]] += self.signs[x][:, np.newaxis].dot(c[np.newaxis, :])
 
     def hash(self, x, param):
         w, p, a, b = param
@@ -119,12 +121,10 @@ if __name__ == '__main__':
     #tradeoff between k and epsilon to get optimum speed and memory
 
     n = 50  #universe size
-    d = 8
-    epsilon = 0.1
     ch = 2
 
     real_counter = np.zeros((n,ch))
-    cs_counter = CountMedianSketch(n, ch, d, epsilon)
+    cs_counter = CountMedianSketch(n, ch)
 
     start = time.time()
 
@@ -140,10 +140,9 @@ if __name__ == '__main__':
     print(time.time()-start)
 
     counter = cs_counter.query_all()
-    error = epsilon*np.sqrt(np.sum(np.square(real_counter)))
-    success_rate = float(np.sum(np.absolute(counter-real_counter)<error))/(n*ch)
-
-    print(success_rate)
+    # error = epsilon*np.sqrt(np.sum(np.square(real_counter)))
+    # success_rate = float(np.sum(np.absolute(counter-real_counter)<error))/(n*ch)
+    # print(success_rate)
 
     plt.plot(counter, 'r-')
     plt.plot(real_counter, 'b-')
