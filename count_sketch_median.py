@@ -43,6 +43,14 @@ class CountMedianSketch:
         ind = np.mod(np.mod((self.hash_params[:, 0]*x+self.hash_params[:, 1]), self.p), self.w)
         return ind
 
+    def get_nearest_prime(self, old_number):
+        try:
+            n = np.max(self.sieve(2*old_number-1))
+            if n < old_number+1: return None
+            return n
+        except ValueError:
+            return None
+
     def sieve(self, n):
         mask = np.ones(n+1)
         mask[:2] = 0
@@ -51,14 +59,6 @@ class CountMedianSketch:
                 continue
             mask[i*i::i] = 0
         return np.argwhere(mask)
-
-    def get_nearest_prime(self, old_number):
-        try:
-            n = np.max(self.sieve(2*old_number-1))
-            if n < old_number+1: return None
-            return n
-        except ValueError:
-            return None
 
 if __name__ == '__main__':
     #CountSketch

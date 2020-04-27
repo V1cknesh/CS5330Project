@@ -56,6 +56,7 @@ class CountMinSketch:
 
 
 if __name__ == '__main__':
+
     n = 50  #universe size
     ch = 3
     real_counter = np.zeros((n, ch))
