@@ -2,6 +2,7 @@ import numpy as np
 import time 
 import matplotlib.pyplot as plt
 import tweepy
+import sys
 
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from googletrans import Translator
@@ -19,7 +20,7 @@ auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth, wait_on_rate_limit=True)
 
 class MyStreamListener(tweepy.StreamListener):
-        
+    time_count = 0
     translator = Translator()
     analyser = SentimentIntensityAnalyzer()
 
@@ -31,9 +32,9 @@ class MyStreamListener(tweepy.StreamListener):
         return score['compound']
 
     def on_status(self, status):
-        if status.lang != 'en': return
+        if status.lang != 'en':  return
         text = status.text.lower()
-        print(text) 
+        # print(text) 
 
         try:
             likes = status.retweeted_status.favorite_count
@@ -56,7 +57,10 @@ class MyStreamListener(tweepy.StreamListener):
                     csketch.insert(i, val)
                     break
 
+        start = time.time()
         all_val = csketch.query_all()
+        end = time.time()
+        f.write("query time: " + str((end-start)*100000) + "ms \n")
 
         a[0].set_title('counts')
         a[1].set_title('sentiments')
@@ -75,8 +79,15 @@ class MyStreamListener(tweepy.StreamListener):
         
         for sub_a in a: sub_a.cla()
         
+        for i in range(len(a)):
+            f.write("accuracy for " + str(i) + ":"+ str(1-np.sqrt(((self.counts[:, i] - all_val[:,i]) ** 2).mean())/(np.max(all_val[:,i]) - np.min(all_val[:,i]) ))+ "\n")
+            f.write("memory Consumption" + str(sys.getsizeof(csketch)) + "\n")
         print(np.sum(self.counts, axis = 0))
         time.sleep(0.01)
+        
+        self.time_count = self.time_count+1
+        if self.time_count > 1000:
+            return False
 
 if __name__ == '__main__':
     # topics = ['bloomberg', 'bennet', 'bernie', 'booker', 'bullock', 'buttigieg', 'castro', 'blasio', 'delaney',
@@ -84,21 +95,25 @@ if __name__ == '__main__':
     #          'moulton', 'ojeda', 'rourke', 'deval', 'ryan', 'sestak', 'steyer', 'swalwell', 
     #          'warren', 'williamson', 'yanggang']
     
-    # topics = ['stacey abrams', 'michelle obama', 'tammy baldwin', 'cory booker', 'sherrod brown', 'pete buttigieg', 'bob casey', 'julian castro', 'catherine cortez mastro', 'val demings', 'tammy duckworth',
-    # 'kamala harris', 'maggie hassan', 'jahana hayes', 'doug jones', 'laura kelly', 'amy klobuchar', 'keisha lance bottoms', 'brenda lawrence', 'michelle lunjam grisham', 'gavin newsom', 'susan rice',
-    # 'terri sewell', 'jeanne shaheen', 'elizabeth warren', 'gretchen whitmer', 'andrew yang', 'sally yates'
-    # ]
+    topics = ['stacey abrams', 'michelle obama', 'tammy baldwin', 'cory booker', 'sherrod brown', 'pete buttigieg', 'bob casey', 'julian castro', 'catherine cortez mastro', 'val demings', 'tammy duckworth',
+    'kamala harris', 'maggie hassan', 'jahana hayes', 'doug jones', 'laura kelly', 'amy klobuchar', 'keisha lance bottoms', 'brenda lawrence', 'michelle lunjam grisham', 'gavin newsom', 'susan rice',
+    'terri sewell', 'jeanne shaheen', 'elizabeth warren', 'gretchen whitmer', 'andrew yang', 'sally yates'
+    ]
     
-    topics = ['kim jong un', 'kim yo jong', 'nike', 'lockdown', 'donald trump', 'corona virus', 'netflix', 'zoom', 'apple iphone', 'tiktok', 'youtube', 'facebook', 'instagram']
+    # topics = ['kim jong un', 'kim yo jong', 'nike', 'lockdown', 'donald trump', 'corona virus', 'netflix', 'zoom', 'apple iphone', 'tiktok', 'youtube', 'facebook', 'instagram']
 
     ch = 3
     myStreamListener = MyStreamListener()
     myStreamListener.set_real_counter((len(topics), ch))
     myStream = tweepy.Stream(auth = api.auth, listener=myStreamListener)
 
-    # csketch = CountMedianSketch(len(topics), 3)
-    csketch = CountMinSketch(len(topics), ch)
+    epsilon = 0.01
 
+    # csketch = CountMedianSketch(len(topics), 3)
+    csketch = CountMinSketch(len(topics), ch, epsilon=epsilon)
+
+    f = open("out.txt", "w")
+    f.write("settings: episilon" + str(epsilon) + "\n")
     plt.show()
     fig, a =  plt.subplots(ch, 1)
     print('node starting to track')
@@ -108,4 +123,5 @@ if __name__ == '__main__':
         #     myStream.filter(track=topics)
         # except:
         #     continue
+    f.close()
     plt.show()
