@@ -93,7 +93,7 @@ class MyStreamListener(tweepy.StreamListener):
 #          'gabbard', 'gillibrand', 'harris', 'hickenlooper', 'inslee', 'klobuchar', 'messam', 
 #          'moulton', 'ojeda', 'rourke', 'deval', 'ryan', 'sestak', 'steyer', 'swalwell', 
 #          'warren', 'williamson', 'yanggang']
-topics = ['kim jong un', 'sharon liew', 'lucas', 'trump', 'thelma', 'corona']
+topics = ['kim jong un', 'kim yo jong', 'nike', 'lockdown', 'donald trump', 'corona virus', 'netflix', 'zoom', 'apple iphone', 'tiktok', 'youtube', 'facebook', 'instagram']
 
 # topics = ['stacey abrams', 'michelle obama', 'tammy baldwin', 'cory booker', 'sherrod brown', 'pete buttigieg', 'bob casey', 'julian castro', 'catherine cortez mastro', 'val demings', 'tammy duckworth',
 # 'kamala harris', 'maggie hassan', 'jahana hayes', 'doug jones', 'laura kelly', 'amy klobuchar', 'keisha lance bottoms', 'brenda lawrence', 'michelle lunjam grisham', 'gavin newsom', 'susan rice',
@@ -120,10 +120,14 @@ fig, a =  plt.subplots(3, 1)
 
 print('node starting to track')
 
+start = time.time()
 while True:
     try:
         myStream.filter(track=topics)
     except:
         continue
+
+    if time.time()-start > 3600:
+        break
 
 plt.show()
