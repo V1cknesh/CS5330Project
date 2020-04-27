@@ -4,7 +4,7 @@ import time
 
 class CountMedianSketch:
 
-    def __init__(self, n, ch, epsilon=0.1, delta = 0.01):
+    def __init__(self, n, ch = 1, epsilon=0.1, delta = 0.01):
         self.n = n
         self.ch = ch
         self.w = int(3./epsilon**2) #bucket size
@@ -16,14 +16,6 @@ class CountMedianSketch:
 
         self.c_table = np.zeros((self.d, self.w, ch))
         self.arange_ind = np.arange(self.c_table.shape[0], dtype=np.int32)
-
-    def get_sign(self, x):
-        ind = np.mod(x+self.signs_params, 2)*2-1
-        return ind
-
-    def get_hash_ind(self, x):
-        ind = np.mod(np.mod((self.hash_params[:, 0]*x+self.hash_params[:, 1]), self.p), self.w)
-        return ind
 
     def query_all(self):
         counter = np.zeros((self.n, self.ch))
@@ -42,6 +34,14 @@ class CountMedianSketch:
         ind = self.get_hash_ind(x)
         sign = self.get_sign(x)
         self.c_table[self.arange_ind, ind] += sign[:, np.newaxis].dot(c[np.newaxis, :])
+
+    def get_sign(self, x):
+        ind = np.mod(x+self.signs_params, 2)*2-1
+        return ind
+
+    def get_hash_ind(self, x):
+        ind = np.mod(np.mod((self.hash_params[:, 0]*x+self.hash_params[:, 1]), self.p), self.w)
+        return ind
 
     def sieve(self, n):
         mask = np.ones(n+1)
@@ -71,15 +71,14 @@ if __name__ == '__main__':
     cs_counter = CountMedianSketch(n, ch)
 
     start = time.time()
+
     m = 30000
     for i in range(m):
         x = np.clip(int(np.random.normal(16, 7, 1)), 0, n-1)
-        c = np.random.normal(1,2,ch)
-        
+        c = np.random.normal(1,2,ch)        
         cs_counter.insert(x, c)
         real_counter[x] += c
 
-    #0.58s for 30k
     print(time.time()-start)
 
     counter = cs_counter.query_all()

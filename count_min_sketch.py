@@ -2,23 +2,19 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time 
 
-
 class CountMinSketch:
 
     def __init__(self, n, ch = 1, epsilon = 0.1, delta = 0.01):
+        self.n = n
+        self.ch = ch  
         self.w = int(2./epsilon) #bucket size
         self.d = 1 + int(np.log(1./delta)) #no of hash
         self.p = self.get_nearest_prime(self.w)    
-
-        self.n = n
-        self.ch = ch        
-        # self.hash_params = np.zeros((self.d, 2), dtype = np.int32)        
-      
+              
         self.hash_params = np.random.randint(0, self.p, (self.d, 2))
 
         self.c_table = np.zeros((self.d, self.w, self.ch))
         self.arange_ind = np.arange(self.c_table.shape[0], dtype=np.int32)
-
 
     def query_all(self):
         #query all items
@@ -26,10 +22,6 @@ class CountMinSketch:
         for i in range(self.n):
             counter[i] = self.query(i)
         return counter
-
-    def get_hash_ind(self, x):
-        ind = np.mod(np.mod((self.hash_params[:, 0]*x+self.hash_params[:, 1]), self.p), self.w)
-        return ind
 
     def query(self, x):
         #query one item
@@ -40,6 +32,10 @@ class CountMinSketch:
     def insert(self, x, c):
         ind = self.get_hash_ind(x)
         self.c_table[self.arange_ind, ind] += c
+
+    def get_hash_ind(self, x):
+        ind = np.mod(np.mod((self.hash_params[:, 0]*x+self.hash_params[:, 1]), self.p), self.w)
+        return ind
 
     def get_nearest_prime(self, old_number):
         try:
@@ -61,10 +57,9 @@ class CountMinSketch:
 
 if __name__ == '__main__':
     n = 50  #universe size
-    epsilon = 0.1
     ch = 3
     real_counter = np.zeros((n, ch))
-    cs_counter = CountMinSketch(n, ch, epsilon)
+    cs_counter = CountMinSketch(n, ch)
 
     m = 30000
     start = time.time()
@@ -74,9 +69,6 @@ if __name__ == '__main__':
         
         cs_counter.insert(x, np.array(c))
         real_counter[x] += c
-
-    #without query 0.45s for 30k 
-    #with query 6.32s for 30k
 
     print(time.time()-start)
 
