@@ -70,4 +70,72 @@ if __name__ == '__main__':
         
         performance = np.asarray(performance)
         np.savetxt('./result/benchmark_'+str(j)+'.csv', performance, delimiter=',')
+
+    n = 500
+    epsilons = [0.001, 0.01, 0.1, 0.2, 0.5]
+    performance = []
+    for epsilon in epsilons:
+        real_counter = np.zeros((n, ch))
         
+        cs_counter = CountMedianSketch(n, ch, epsilon = epsilon)
+
+        m = 1000000
+        start = time.time()
+        for i in range(m):
+            x = np.clip(int(np.random.normal(n/2, n/7, 1)), 0, n-1)
+            c = np.random.normal(1, 3, ch)
+            cs_counter.insert(x, np.array(c))
+            real_counter[x] += c
+
+        total_time = (time.time()-start)/m
+        counter = cs_counter.query_all()
+        norm_rmse = np.sqrt(np.sum(np.mean(np.square(counter-real_counter))))/(float(m)/n)
+        memory = get_size(cs_counter)
+
+        #time in s, memory in bytes
+        res = [epsilon, total_time, norm_rmse, memory]
+        performance.append(res)
+        print(res)
+        plt.grid()
+        plt.plot(counter, 'r-')
+        plt.plot(real_counter, 'b-')
+        plt.savefig('./result/benchmark_2_'+str(epsilon)+'.png')
+        plt.close()
+    
+    performance = np.asarray(performance)
+    np.savetxt('./result/benchmark_2.csv', performance, delimiter=',')
+
+    
+    n = 500
+    deltas = [0.001, 0.01, 0.1, 0.2, 0.5]
+    performance = []
+    for delta in deltas:
+        real_counter = np.zeros((n, ch))
+        
+        cs_counter = CountMedianSketch(n, ch, delta = delta)
+
+        m = 1000000
+        start = time.time()
+        for i in range(m):
+            x = np.clip(int(np.random.normal(n/2, n/7, 1)), 0, n-1)
+            c = np.random.normal(1, 3, ch)
+            cs_counter.insert(x, np.array(c))
+            real_counter[x] += c
+
+        total_time = (time.time()-start)/m
+        counter = cs_counter.query_all()
+        norm_rmse = np.sqrt(np.sum(np.mean(np.square(counter-real_counter))))/(float(m)/n)
+        memory = get_size(cs_counter)
+
+        #time in s, memory in bytes
+        res = [delta, total_time, norm_rmse, memory]
+        performance.append(res)
+        print(res)
+        plt.grid()
+        plt.plot(counter, 'r-')
+        plt.plot(real_counter, 'b-')
+        plt.savefig('./result/benchmark_3_'+str(delta)+'.png')
+        plt.close()
+    
+    performance = np.asarray(performance)
+    np.savetxt('./result/benchmark_3.csv', performance, delimiter=',')

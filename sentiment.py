@@ -8,6 +8,8 @@ from googletrans import Translator
 
 from count_min_sketch import CountMinSketch
 from count_sketch_median import CountMedianSketch
+from random_word import RandomWords
+from benchmarking import get_size
 
 consumer_key = "ew0pmbxpjcfgMTSZcywA0Fgb7"
 consumer_secret = "fO0t6AmR2RvOoAV6aSnVzheDyzCDZz2GJmSWCDsIfjQUXk45fD"
@@ -31,9 +33,13 @@ class MyStreamListener(tweepy.StreamListener):
         return score['compound']
 
     def on_status(self, status):
-        if status.lang != 'en': return
+        # if status.lang != 'en': return
         text = status.text.lower()
         print(text) 
+        outf.write(text)
+        outf.write("\n")
+
+        print('size ', get_size(csketch))
 
         try:
             likes = status.retweeted_status.favorite_count
@@ -69,43 +75,59 @@ class MyStreamListener(tweepy.StreamListener):
             a[i].plot(arange_ind, self.counts[:, i], 'b--')
             a[i].set_xticks(arange_ind)
 
-        a[2].set_xticklabels(topics, rotation=90)
-        
+        # a[2].xticks(fontsize=12)
+        a[2].set_xticklabels(topics, rotation=90, fontsize = 10)
+
+        # plt.savefig('./result/politicians.png')        
         plt.pause(1e-17)
         
         for sub_a in a: sub_a.cla()
         
         print(np.sum(self.counts, axis = 0))
+        print(time.time()-start)
+
         time.sleep(0.01)
 
 if __name__ == '__main__':
-    # topics = ['bloomberg', 'bennet', 'bernie', 'booker', 'bullock', 'buttigieg', 'castro', 'blasio', 'delaney',
-    #          'gabbard', 'gillibrand', 'harris', 'hickenlooper', 'inslee', 'klobuchar', 'messam', 
-    #          'moulton', 'ojeda', 'rourke', 'deval', 'ryan', 'sestak', 'steyer', 'swalwell', 
-    #          'warren', 'williamson', 'yanggang']
+
+    # r = RandomWords()
+    # topics = r.get_random_words(hasDictionaryDef="true")
+    # print(topics)    
+
+    topics = ['kim jong un', 'kim yo jong', 'jacinda ardern', 'boris johnson', 'emmanuel macron', 'giuseppe conte', 'xi jinping', 'vladimir putin', 'angela merkel', 'narendra modi', 'jokowi', 'lee hsien loong', 'muhyiddin yassin', 'najib razak', 'justin trudeau', 
+    'donald trump', 'mike pence', 'andrew cuomo', 'joe biden', 'bernie sanders', 'aoc', 'nancy pelosi', 
+    'stacey abrams', 'michelle obama', 'tammy baldwin', 'cory booker', 'sherrod brown', 'pete buttigieg', 'bob casey', 'julian castro', 'catherine cortez mastro', 'val demings', 'tammy duckworth',
+    'kamala harris', 'maggie hassan', 'jahana hayes', 'doug jones', 'laura kelly', 'amy klobuchar', 'keisha lance bottoms', 'brenda lawrence', 'michelle lunjam grisham', 'gavin newsom', 'susan rice',
+    'terri sewell', 'jeanne shaheen', 'elizabeth warren', 'gretchen whitmer', 'andrew yang', 'sally yates']
     
-    # topics = ['stacey abrams', 'michelle obama', 'tammy baldwin', 'cory booker', 'sherrod brown', 'pete buttigieg', 'bob casey', 'julian castro', 'catherine cortez mastro', 'val demings', 'tammy duckworth',
-    # 'kamala harris', 'maggie hassan', 'jahana hayes', 'doug jones', 'laura kelly', 'amy klobuchar', 'keisha lance bottoms', 'brenda lawrence', 'michelle lunjam grisham', 'gavin newsom', 'susan rice',
-    # 'terri sewell', 'jeanne shaheen', 'elizabeth warren', 'gretchen whitmer', 'andrew yang', 'sally yates'
+    # topics = ['singapore', 'kuala lumpur', 'hanoi', 'jakarta', 'rome', 'bangkok', 'tokyo', 'delhi', 'seoul', 'beijing', 'hongkong', 'shanghai', 'milan', 'yangon', 
+    # 'sydney', 'christchurch', 'manila', 'taipei', 'san francisco', 'los angeles', 'las vegas', 'chicago', 'dallas', 'miami', 'new york', 'toronto', 'vancouver', 'lima',
+    # 'london', 'paris', 'belgium', 'berlin', 'rome', 'madrid', 'lisbon', 'stockholm', 'oslo', 'copenhagen', 'helsinki', 'istanbul', 'dubai', 'johannesburg', 'lahore', 'dhaka', 'moscow',
+    # 'pyongyang', 'sao paulo', 'cairo', 'mumbai', 'osaka', 'karachi', 'kolkata', 'buenos aires', 'rio janeiro', 'shenzhen', 'bogota', 'chennai', 'melbourne', 'wuhan', 
+    # 'nairobi'
     # ]
-    
-    topics = ['kim jong un', 'kim yo jong', 'nike', 'lockdown', 'donald trump', 'corona virus', 'netflix', 'zoom', 'apple iphone', 'tiktok', 'youtube', 'facebook', 'instagram']
+
+    # topics.sort()
+    print(len(topics))
 
     ch = 3
     myStreamListener = MyStreamListener()
     myStreamListener.set_real_counter((len(topics), ch))
     myStream = tweepy.Stream(auth = api.auth, listener=myStreamListener)
 
-    # csketch = CountMedianSketch(len(topics), 3)
-    csketch = CountMinSketch(len(topics), ch)
+    csketch = CountMedianSketch(len(topics), ch)
+    # csketch = CountMinSketch(len(topics), ch)
 
+    outf = open("./tweets.txt", "w+")
     plt.show()
     fig, a =  plt.subplots(ch, 1)
     print('node starting to track')
+    start = time.time()
     while True:
-        myStream.filter(track=topics)
-        # try:
-        #     myStream.filter(track=topics)
-        # except:
-        #     continue
+        try:
+            myStream.filter(track=topics)
+        except:
+            continue
+    
     plt.show()
+
