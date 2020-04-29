@@ -111,7 +111,6 @@ if __name__ == '__main__':
     'kamala harris', 'maggie hassan', 'jahana hayes', 'doug jones', 'laura kelly', 'amy klobuchar', 'keisha lance bottoms', 'brenda lawrence', 'michelle lunjam grisham', 'gavin newsom', 'susan rice',
     'terri sewell', 'jeanne shaheen', 'elizabeth warren', 'gretchen whitmer', 'andrew yang', 'sally yates']
     
-<<<<<<< HEAD
     # topics = ['singapore', 'kuala lumpur', 'hanoi', 'jakarta', 'rome', 'bangkok', 'tokyo', 'delhi', 'seoul', 'beijing', 'hongkong', 'shanghai', 'milan', 'yangon', 
     # 'sydney', 'christchurch', 'manila', 'taipei', 'san francisco', 'los angeles', 'las vegas', 'chicago', 'dallas', 'miami', 'new york', 'toronto', 'vancouver', 'lima',
     # 'london', 'paris', 'belgium', 'berlin', 'rome', 'madrid', 'lisbon', 'stockholm', 'oslo', 'copenhagen', 'helsinki', 'istanbul', 'dubai', 'johannesburg', 'lahore', 'dhaka', 'moscow',
@@ -121,53 +120,27 @@ if __name__ == '__main__':
 
     # topics.sort()
     print(len(topics))
-=======
-    topics = ['stacey abrams', 'michelle obama', 'tammy baldwin', 'cory booker', 'sherrod brown', 'pete buttigieg', 'bob casey', 'julian castro', 'catherine cortez mastro', 'val demings', 'tammy duckworth',
-    'kamala harris', 'maggie hassan', 'jahana hayes', 'doug jones', 'laura kelly', 'amy klobuchar', 'keisha lance bottoms', 'brenda lawrence', 'michelle lunjam grisham', 'gavin newsom', 'susan rice',
-    'terri sewell', 'jeanne shaheen', 'elizabeth warren', 'gretchen whitmer', 'andrew yang', 'sally yates'
-    ]
-    
-    # topics = ['kim jong un', 'kim yo jong', 'nike', 'lockdown', 'donald trump', 'corona virus', 'netflix', 'zoom', 'apple iphone', 'tiktok', 'youtube', 'facebook', 'instagram']
->>>>>>> c5066221b4e7edf40e959995d659c6663639e8b8
 
     ch = 3
     myStreamListener = MyStreamListener()
     myStreamListener.set_real_counter((len(topics), ch))
     myStream = tweepy.Stream(auth = api.auth, listener=myStreamListener)
 
-<<<<<<< HEAD
     csketch = CountMedianSketch(len(topics), ch)
     # csketch = CountMinSketch(len(topics), ch)
 
     outf = open("./tweets.txt", "w+")
-=======
-    epsilon = 0.01
-
-    # csketch = CountMedianSketch(len(topics), 3)
-    csketch = CountMinSketch(len(topics), ch, epsilon=epsilon)
 
     f = open("out.txt", "w")
     f.write("settings: episilon" + str(epsilon) + "\n")
->>>>>>> c5066221b4e7edf40e959995d659c6663639e8b8
     plt.show()
     fig, a =  plt.subplots(ch, 1)
     print('node starting to track')
     start = time.time()
     while True:
-<<<<<<< HEAD
         try:
             myStream.filter(track=topics)
         except:
             continue
     
     plt.show()
-
-=======
-        myStream.filter(track=topics)
-        # try:
-        #     myStream.filter(track=topics)
-        # except:
-        #     continue
-    f.close()
-    plt.show()
->>>>>>> c5066221b4e7edf40e959995d659c6663639e8b8
