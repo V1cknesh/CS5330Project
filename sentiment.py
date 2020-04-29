@@ -2,6 +2,7 @@ import numpy as np
 import time 
 import matplotlib.pyplot as plt
 import tweepy
+import sys
 
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from googletrans import Translator
@@ -21,7 +22,7 @@ auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth, wait_on_rate_limit=True)
 
 class MyStreamListener(tweepy.StreamListener):
-        
+    time_count = 0
     translator = Translator()
     analyser = SentimentIntensityAnalyzer()
 
@@ -62,7 +63,10 @@ class MyStreamListener(tweepy.StreamListener):
                     csketch.insert(i, val)
                     break
 
+        start = time.time()
         all_val = csketch.query_all()
+        end = time.time()
+        f.write("query time: " + str((end-start)*100000) + "ms \n")
 
         a[0].set_title('counts')
         a[1].set_title('sentiments')
@@ -83,10 +87,17 @@ class MyStreamListener(tweepy.StreamListener):
         
         for sub_a in a: sub_a.cla()
         
+        for i in range(len(a)):
+            f.write("accuracy for " + str(i) + ":"+ str(1-np.sqrt(((self.counts[:, i] - all_val[:,i]) ** 2).mean())/(np.max(all_val[:,i]) - np.min(all_val[:,i]) ))+ "\n")
+            f.write("memory Consumption" + str(sys.getsizeof(csketch)) + "\n")
         print(np.sum(self.counts, axis = 0))
         print(time.time()-start)
 
         time.sleep(0.01)
+        
+        self.time_count = self.time_count+1
+        if self.time_count > 1000:
+            return False
 
 if __name__ == '__main__':
 
@@ -100,6 +111,7 @@ if __name__ == '__main__':
     'kamala harris', 'maggie hassan', 'jahana hayes', 'doug jones', 'laura kelly', 'amy klobuchar', 'keisha lance bottoms', 'brenda lawrence', 'michelle lunjam grisham', 'gavin newsom', 'susan rice',
     'terri sewell', 'jeanne shaheen', 'elizabeth warren', 'gretchen whitmer', 'andrew yang', 'sally yates']
     
+<<<<<<< HEAD
     # topics = ['singapore', 'kuala lumpur', 'hanoi', 'jakarta', 'rome', 'bangkok', 'tokyo', 'delhi', 'seoul', 'beijing', 'hongkong', 'shanghai', 'milan', 'yangon', 
     # 'sydney', 'christchurch', 'manila', 'taipei', 'san francisco', 'los angeles', 'las vegas', 'chicago', 'dallas', 'miami', 'new york', 'toronto', 'vancouver', 'lima',
     # 'london', 'paris', 'belgium', 'berlin', 'rome', 'madrid', 'lisbon', 'stockholm', 'oslo', 'copenhagen', 'helsinki', 'istanbul', 'dubai', 'johannesburg', 'lahore', 'dhaka', 'moscow',
@@ -109,21 +121,40 @@ if __name__ == '__main__':
 
     # topics.sort()
     print(len(topics))
+=======
+    topics = ['stacey abrams', 'michelle obama', 'tammy baldwin', 'cory booker', 'sherrod brown', 'pete buttigieg', 'bob casey', 'julian castro', 'catherine cortez mastro', 'val demings', 'tammy duckworth',
+    'kamala harris', 'maggie hassan', 'jahana hayes', 'doug jones', 'laura kelly', 'amy klobuchar', 'keisha lance bottoms', 'brenda lawrence', 'michelle lunjam grisham', 'gavin newsom', 'susan rice',
+    'terri sewell', 'jeanne shaheen', 'elizabeth warren', 'gretchen whitmer', 'andrew yang', 'sally yates'
+    ]
+    
+    # topics = ['kim jong un', 'kim yo jong', 'nike', 'lockdown', 'donald trump', 'corona virus', 'netflix', 'zoom', 'apple iphone', 'tiktok', 'youtube', 'facebook', 'instagram']
+>>>>>>> c5066221b4e7edf40e959995d659c6663639e8b8
 
     ch = 3
     myStreamListener = MyStreamListener()
     myStreamListener.set_real_counter((len(topics), ch))
     myStream = tweepy.Stream(auth = api.auth, listener=myStreamListener)
 
+<<<<<<< HEAD
     csketch = CountMedianSketch(len(topics), ch)
     # csketch = CountMinSketch(len(topics), ch)
 
     outf = open("./tweets.txt", "w+")
+=======
+    epsilon = 0.01
+
+    # csketch = CountMedianSketch(len(topics), 3)
+    csketch = CountMinSketch(len(topics), ch, epsilon=epsilon)
+
+    f = open("out.txt", "w")
+    f.write("settings: episilon" + str(epsilon) + "\n")
+>>>>>>> c5066221b4e7edf40e959995d659c6663639e8b8
     plt.show()
     fig, a =  plt.subplots(ch, 1)
     print('node starting to track')
     start = time.time()
     while True:
+<<<<<<< HEAD
         try:
             myStream.filter(track=topics)
         except:
@@ -131,3 +162,12 @@ if __name__ == '__main__':
     
     plt.show()
 
+=======
+        myStream.filter(track=topics)
+        # try:
+        #     myStream.filter(track=topics)
+        # except:
+        #     continue
+    f.close()
+    plt.show()
+>>>>>>> c5066221b4e7edf40e959995d659c6663639e8b8
