@@ -31,7 +31,7 @@ capture = pyshark.LiveCapture(interface='vEthernet (nat)')
 
 
 
-n = 6000  # universe size
+n = 1000  # universe size
 ch = 2
 real_counter = np.zeros((n, ch))
 cs_counter = CountMinSketch(n, ch)
@@ -42,9 +42,8 @@ start = time.time()
 for packet in capture.sniff_continuously(packet_count=m):
 
     try:
-        x = int(packet['udp'].srcport)
-        c = int(packet['ip'].len)
-        cs_counter.insert(x, np.array(c))
+        x = int(int(packet['udp'].srcport) - 5000)
+        c = [int(packet['ip'].len),int(packet['ip'].len)]
         cs_counter.insert(x, np.array(c))
         real_counter[x] += c
         print(x)
