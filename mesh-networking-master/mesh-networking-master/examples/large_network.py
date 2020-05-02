@@ -9,6 +9,8 @@ from mesh.node import Node
 from mesh.links import UDPLink, VirtualLink, IRCLink
 from mesh.programs import Printer, Switch
 from mesh.filters import UniqueFilter
+from random_words import RandomWords
+
 
 
 def hops(node1, node2):
@@ -69,6 +71,8 @@ if __name__ == "__main__":
     port = 2016
     # if len(sys.argv) > 1:
         # hardware_iface = sys.argv[1]
+    rw = RandomWords()
+
 
     num_nodes = ask(int, "How many nodes do you want?     [30]:",      30)
     num_links = ask(int, "How many links do you want?      [8]:",       8)
@@ -137,7 +141,8 @@ if __name__ == "__main__":
                             print(link.port)
                         except (RuntimeError, TypeError, NameError, Exception):
                             pass
-                        message = str("%s<%s> ∂%s: Hello World!" % (node, node.interfaces, eigenvalue(nodes, node)))
+                        word = rw.random_word()
+                        message = str(str("%s<%s> ∂%s: " + word) % (node, node.interfaces, eigenvalue(nodes, node)))
                         if message == "stop":
                             node.stop()
                             link.stop()
