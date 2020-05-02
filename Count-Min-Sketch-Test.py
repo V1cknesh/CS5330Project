@@ -3,7 +3,7 @@ import numpy as np
 import time
 import matplotlib.pyplot as plt
 from count_min_sketch import CountMinSketch
-from count_sketch_median import CountMedianSketch
+import sys
 
 def get_size(obj, seen=None):
     """Recursively finds size of objects"""
@@ -33,7 +33,7 @@ capture = pyshark.LiveCapture(interface='vEthernet (nat)')
 
 
 n = 50  # universe size
-ch = 3
+ch = 2
 real_counter = np.zeros((n, ch))
 cs_counter = CountMinSketch(n, ch)
 
@@ -49,10 +49,12 @@ for packet in capture.sniff_continuously(packet_count=None):
         try:
             x = int(packet['udp'].srcport)
             print(mi)
-            c = 1
+            c = int(packet['ip'].len)
+            cs_counter.insert(x, np.array(c))
             cs_counter.insert(x, np.array(c))
             real_counter[x] += c
             mi += 1
+            print(mi)
             
         except (RuntimeError, TypeError, NameError, Exception):
             pass
@@ -74,40 +76,3 @@ plt.close()
 
 
 
-#Count Median Sketch
-
-n = 50  # universe size
-ch = 3
-real_counter = np.zeros((n, ch))
-cs_counter = CountMedianSketch(n, ch)
-
-m = 30000
-mi = 0
-start = time.time()
-
-for packet in capture.sniff_continuously(packet_count=None):
-    if (mi < m):
-        try:
-            x = int(packet['udp'].srcport)
-            print(mi)
-            c = 1
-            cs_counter.insert(x, np.array(c))
-            real_counter[x] += c
-            mi += 1
-
-        except (RuntimeError, TypeError, NameError, Exception):
-            pass
-    else:
-        break
-
-print(time.time() - start)
-print(get_size(cs_counter))
-
-counter = cs_counter.query_all()
-
-
-plt.grid()
-plt.plot(counter, 'r-')
-plt.plot(real_counter, 'b-')
-plt.savefig('./result/count_median_sketch'+ '.png')
-plt.close()
