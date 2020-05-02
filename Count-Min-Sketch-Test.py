@@ -29,36 +29,32 @@ def get_size(obj, seen=None):
 
 capture = pyshark.LiveCapture(interface='vEthernet (nat)')
 
-#Count Min Sketch
 
 
-n = 50  # universe size
+n = 6000  # universe size
 ch = 2
 real_counter = np.zeros((n, ch))
 cs_counter = CountMinSketch(n, ch)
 
-m = 10000000
-mi = 0
+m = 100000
 start = time.time()
 
-for packet in capture.sniff_continuously(packet_count=None):
-    mi += 1
-    if (mi <= m):
-        try:
-            x = int(packet['udp'].srcport)
-            c = int(packet['ip'].len)
-            cs_counter.insert(x, np.array(c))
-            cs_counter.insert(x, np.array(c))
-            real_counter[x] += c
-            print(mi)
+for packet in capture.sniff_continuously(packet_count=m):
 
-        except (RuntimeError, TypeError, NameError, Exception):
-            pass
-    else:
-        break
+    try:
+        x = int(packet['udp'].srcport)
+        c = int(packet['ip'].len)
+        cs_counter.insert(x, np.array(c))
+        cs_counter.insert(x, np.array(c))
+        real_counter[x] += c
+        print(x)
+    except (RuntimeError, TypeError, NameError, Exception):
+        print("Error Occured")
+        pass
+
         
 print(time.time() - start)
-#print(get_size(cs_counter))
+print(get_size(cs_counter))
 
 counter = cs_counter.query_all()
 
