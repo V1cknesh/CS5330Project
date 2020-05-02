@@ -37,32 +37,28 @@ ch = 2
 real_counter = np.zeros((n, ch))
 cs_counter = CountMinSketch(n, ch)
 
-m = 30000
+m = 10000000
 mi = 0
 start = time.time()
-    
-
-
 
 for packet in capture.sniff_continuously(packet_count=None):
-    if (mi < m):
+    mi += 1
+    if (mi <= m):
         try:
             x = int(packet['udp'].srcport)
-            print(mi)
             c = int(packet['ip'].len)
             cs_counter.insert(x, np.array(c))
             cs_counter.insert(x, np.array(c))
             real_counter[x] += c
-            mi += 1
             print(mi)
-            
+
         except (RuntimeError, TypeError, NameError, Exception):
             pass
     else:
         break
         
 print(time.time() - start)
-print(get_size(cs_counter))
+#print(get_size(cs_counter))
 
 counter = cs_counter.query_all()
 
