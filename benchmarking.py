@@ -2,6 +2,7 @@ import sys
 import numpy as np 
 import time 
 import matplotlib.pyplot as plt
+import pyshark
 from count_min_sketch import CountMinSketch
 from count_sketch_median import CountMedianSketch
 
@@ -30,6 +31,8 @@ if __name__ == '__main__':
     #find speed, memory usage, and 
     ns = [10, 30, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
     ch = 1
+    capture = pyshark.LiveCapture(interface='vEthernet (nat)')
+
    
     for j in range(2):
         performance = []
@@ -42,12 +45,23 @@ if __name__ == '__main__':
                 cs_counter = CountMedianSketch(n, ch)
 
             m = 1000000
+            mi = 0
             start = time.time()
-            for i in range(m):
-                x = np.clip(int(np.random.normal(n/2, n/7, 1)), 0, n-1)
-                c = np.random.normal(1, 3, ch)
-                cs_counter.insert(x, np.array(c))
-                real_counter[x] += c
+            for packet in capture.sniff_continuously(packet_count=None):
+                if (mi < m):
+                    try:
+                        x = int(packet['udp'].srcport)
+                        print(x)
+                        print(mi)
+                        c = 1
+                        cs_counter.insert(x, np.array(c))
+                        real_counter[x] += c
+                        mi += 1
+                    except (RuntimeError, TypeError, NameError, Exception):
+                        mi += 1
+                        pass
+                else:
+                    break
 
             total_time = (time.time()-start)/m
             counter = cs_counter.query_all()
@@ -80,12 +94,23 @@ if __name__ == '__main__':
         cs_counter = CountMedianSketch(n, ch, epsilon = epsilon)
 
         m = 1000000
+        mi = 0
         start = time.time()
-        for i in range(m):
-            x = np.clip(int(np.random.normal(n/2, n/7, 1)), 0, n-1)
-            c = np.random.normal(1, 3, ch)
-            cs_counter.insert(x, np.array(c))
-            real_counter[x] += c
+        for packet in capture.sniff_continuously(packet_count=None):
+            if (mi < m):
+                try:
+                    x = int(packet['udp'].srcport)
+                    print(x)
+                    print(mi)
+                    c = 1
+                    cs_counter.insert(x, np.array(c))
+                    real_counter[x] += c
+                    mi += 1
+                except (RuntimeError, TypeError, NameError, Exception):
+                    mi += 1
+                    pass
+            else:
+                break
 
         total_time = (time.time()-start)/m
         counter = cs_counter.query_all()
@@ -115,12 +140,22 @@ if __name__ == '__main__':
         cs_counter = CountMedianSketch(n, ch, delta = delta)
 
         m = 1000000
+        mi = 0
         start = time.time()
-        for i in range(m):
-            x = np.clip(int(np.random.normal(n/2, n/7, 1)), 0, n-1)
-            c = np.random.normal(1, 3, ch)
-            cs_counter.insert(x, np.array(c))
-            real_counter[x] += c
+        for packet in capture.sniff_continuously(packet_count=None):
+            if (mi < m):
+                try:
+                    x = int(packet['udp'].srcport)
+                    print(mi)
+                    c = 1
+                    cs_counter.insert(x, np.array(c))
+                    real_counter[x] += c
+                    mi += 1
+                except (RuntimeError, TypeError, NameError, Exception):
+                    mi += 1
+                    pass
+            else:
+                break
 
         total_time = (time.time()-start)/m
         counter = cs_counter.query_all()

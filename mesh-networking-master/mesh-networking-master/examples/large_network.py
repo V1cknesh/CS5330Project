@@ -4,7 +4,7 @@
 import traceback
 import time
 import random
-
+import numpy as np
 from mesh.node import Node
 from mesh.links import UDPLink, VirtualLink, IRCLink
 from mesh.programs import Printer, Switch
@@ -79,7 +79,11 @@ if __name__ == "__main__":
     print('Creating Links...')
     links = []
     if real_link:
-        links += [UDPLink('en0', port), UDPLink('en1', port+1), UDPLink('en2', port+2)]
+        str_link = 'en'
+        for i in range(num_links):
+            str_link += str(i)
+            links += [UDPLink(str_link, random.choice(np.arange(1000)+5000))]
+            str_link = 'en'
     if irc_link:
         links += [IRCLink('irc0')]
     links += [
@@ -128,12 +132,18 @@ if __name__ == "__main__":
                 if node:
                     while(True):
                         node = random.choice(nodes)
-                        print(node.name)
+                        link = random.choice(links)
+                        try:
+                            print(link.port)
+                        except (RuntimeError, TypeError, NameError, Exception):
+                            pass
                         message = str("%s<%s> ∂%s: Hello World!" % (node, node.interfaces, eigenvalue(nodes, node)))
                         if message == "stop":
                             node.stop()
+                            link.stop()
                         else:
                             node.send(bytes(message, 'UTF-8'))  # convert python str to bytes for sending over the wire
+                            link.send(bytes(message, 'UTF-8'))
                 else:
                     print("Not a node.")
 

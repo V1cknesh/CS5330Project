@@ -1,5 +1,7 @@
 Packet Analyzer
 
+pip install mesh-networking
+
 cd \mesh-networking-master\mesh-networking-master\examples
 
 python large_network.py
@@ -16,6 +18,8 @@ On Screen options
 
 
 5. Enter "y"
+
+enter n5 to start the message passing loop
 
 
 We can observe the traffic using the tool below or wireshark
