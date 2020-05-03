@@ -5,26 +5,7 @@ import sys
 import matplotlib.pyplot as plt
 from count_sketch_median import CountMedianSketch
 
-def get_size(obj, seen=None):
-    """Recursively finds size of objects"""
-    size = sys.getsizeof(obj)
-    if seen is None:
-        seen = set()
-    obj_id = id(obj)
-    if obj_id in seen:
-        return 0
-    # Important mark as seen *before* entering recursion to gracefully handle
-    # self-referential objects
-    seen.add(obj_id)
-    if isinstance(obj, dict):
-        size += sum([get_size(v, seen) for v in obj.values()])
-        size += sum([get_size(k, seen) for k in obj.keys()])
-    elif hasattr(obj, '__dict__'):
-        size += get_size(obj.__dict__, seen)
-    elif hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes, bytearray)):
-        size += sum([get_size(i, seen) for i in obj])
-    return size
-
+from benchmarking import get_size
 
 
 capture = pyshark.LiveCapture(interface='vEthernet (nat)')
@@ -37,26 +18,27 @@ real_counter = np.zeros((n, ch))
 cs_counter = CountMedianSketch(n, ch)
 
 m = 100000
+
 start = time.time()
-
-
-
 for packet in capture.sniff_continuously(packet_count=m):
 
     try:
-
-        x = int(int(packet['udp'].srcport) - 5000)
-        c = [int(packet['ip'].len),int(packet['ip'].len)]
-        cs_counter.insert(x, np.array(c))
-        real_counter[x] += c
-        print(x)
-
+        
+        x_src = int(int(packet['udp'].srcport) - 5000)
+        c_src = np.array([int(packet['ip'].len),0])
+        
+        x_dst = int(int(packet['udp'].dstport) - 5000)
+        c_dst = np.array([0,int(packet['ip'].len)])
+        
+        cs_counter.insert(x_src, c_src)
+        cs_counter.insert(x_dst, np.array(c_dst))
+        
+        real_counter[x_src] += c_src
+        real_counter[x_dst] += c_dst
+        
     except (RuntimeError, TypeError, NameError, Exception):
         print("Error Occured")
         pass
-
-
-
 
 
 print(time.time() - start)
@@ -64,9 +46,14 @@ print(get_size(cs_counter))
 
 counter = cs_counter.query_all()
 
+plt.grid()
+plt.plot(counter[:, 0], 'r-')
+plt.plot(real_counter[:, 0], 'b-')
+plt.savefig('./result/count_median_sketch_src'+ '.png')
+plt.close()
 
 plt.grid()
-plt.plot(counter, 'r-')
-plt.plot(real_counter, 'b-')
-plt.savefig('./result/count_median_sketch'+ '.png')
+plt.plot(counter[:, 1], 'r-')
+plt.plot(real_counter[:, 1], 'b-')
+plt.savefig('./result/count_median_sketch_dst'+ '.png')
 plt.close()
