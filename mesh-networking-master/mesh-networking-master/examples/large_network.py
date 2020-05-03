@@ -136,7 +136,6 @@ if __name__ == "__main__":
                 if node:
                     while(True):
                         node = random.choice(nodes)
-                        link = random.choice(links)
                         try:
                             print(link.port)
                         except (RuntimeError, TypeError, NameError, Exception):
@@ -145,10 +144,8 @@ if __name__ == "__main__":
                         message = str(str("%s<%s> ∂%s: " + word) % (node, node.interfaces, eigenvalue(nodes, node)))
                         if message == "stop":
                             node.stop()
-                            link.stop()
                         else:
                             node.send(bytes(message, 'UTF-8'))  # convert python str to bytes for sending over the wire
-                            link.send(bytes(message, 'UTF-8'))
                 else:
                     print("Not a node.")
 
