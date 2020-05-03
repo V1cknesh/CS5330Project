@@ -31,10 +31,16 @@ for packet in capture.sniff_continuously(packet_count=m):
         c_dst = np.array([0,int(packet['ip'].len)])
         
         cs_counter.insert(x_src, c_src)
-        cs_counter.insert(x_dst, np.array(c_dst))
+        cs_counter.insert(x_dst, c_dst)
         
         real_counter[x_src] += c_src
         real_counter[x_dst] += c_dst
+        
+
+        print('-----------------------------')
+        print('source: ', x_src)
+        print('message size: ', c_src[0])
+        print('destination: ', x_dst)
         
     except (RuntimeError, TypeError, NameError, Exception):
         print("Error Occured")
