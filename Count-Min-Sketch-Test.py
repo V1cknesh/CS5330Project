@@ -44,13 +44,13 @@ counter = cs_counter.query_all()
 plt.grid()
 plt.plot(counter[:, 0], 'r-')
 plt.plot(real_counter[:, 0], 'b-')
-plt.savefig('./result/count_median_sketch_src'+ '.png')
+plt.savefig('./result/count_min_sketch_src'+ '.png')
 plt.close()
 
 plt.grid()
 plt.plot(counter[:, 1], 'r-')
 plt.plot(real_counter[:, 1], 'b-')
-plt.savefig('./result/count_median_sketch_dst'+ '.png')
+plt.savefig('./result/count_min_sketch_dst'+ '.png')
 plt.close()
 
 
