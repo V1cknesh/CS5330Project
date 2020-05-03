@@ -25,9 +25,12 @@ class CountMedianSketch:
 
     def query(self, x):
         #query one item
+        start = time.time()
         ind = self.get_hash_ind(x)
         sign = self.get_sign(x)
         min_val = np.median(np.multiply(sign[:, np.newaxis],self.c_table[self.arange_ind, ind]), axis = 0)
+        
+        print(time.time()-start)
         return min_val
 
     def insert(self, x, c):

@@ -40,18 +40,12 @@ class MyStreamListener(tweepy.StreamListener):
         outf.write(text)
         outf.write("\n")
 
-        print('size ', get_size(csketch))
-
         try:
             likes = status.retweeted_status.favorite_count
         except:
             likes = status.favorite_count
         
         sentiment = self.get_sentiment(text)
-        # try:
-        #     sentiment = self.get_sentiment(text)
-        # except:
-        #     return
 
         for i in range(len(topics)):
             topic = topics[i]
@@ -62,42 +56,49 @@ class MyStreamListener(tweepy.StreamListener):
                     self.counts[i] += val
                     csketch.insert(i, val)
                     break
+        print(np.sum(self.counts, axis = 0)[0])
+        if np.sum(self.counts, axis = 0)[0]%50 == 0:
+            print('size ', get_size(csketch))
 
-        start = time.time()
-        all_val = csketch.query_all()
-        end = time.time()
-        f.write("query time: " + str((end-start)*100000) + "ms \n")
 
-        a[0].set_title('counts')
-        a[1].set_title('sentiments')
-        a[2].set_title('likes')
-        arange_ind = np.arange(all_val.shape[0])
+            start = time.time()
+            all_val = csketch.query_all()
+            end = time.time()
+            f.write("query time: " + str(end-start) + "s \n")
+            print('query_all time : ', end - start)
 
-        for i in range(len(a)):
-            a[i].grid()
-            a[i].plot(arange_ind, all_val[:, i], 'r')
-            a[i].plot(arange_ind, self.counts[:, i], 'b--')
-            a[i].set_xticks(arange_ind)
+            a[0].set_title('counts')
+            a[1].set_title('sentiments')
+            a[2].set_title('likes')
+            arange_ind = np.arange(all_val.shape[0])
 
-        # a[2].xticks(fontsize=12)
-        a[2].set_xticklabels(topics, rotation=90, fontsize = 10)
+            for i in range(len(a)):
+                a[i].grid()
+                a[i].plot(arange_ind, all_val[:, i], 'r')
+                a[i].plot(arange_ind, self.counts[:, i], 'b--')
+                a[i].set_xticks(arange_ind)
 
-        # plt.savefig('./result/politicians.png')        
-        plt.pause(1e-17)
-        
-        for sub_a in a: sub_a.cla()
-        
-        for i in range(len(a)):
-            f.write("accuracy for " + str(i) + ":"+ str(1-np.sqrt(((self.counts[:, i] - all_val[:,i]) ** 2).mean())/(np.max(all_val[:,i]) - np.min(all_val[:,i]) ))+ "\n")
-            f.write("memory Consumption" + str(sys.getsizeof(csketch)) + "\n")
-        print(np.sum(self.counts, axis = 0))
-        print(time.time()-start)
+            a[2].set_xticklabels(topics, rotation=90, fontsize = 10)
+            fig.tight_layout()
 
-        time.sleep(0.01)
-        
-        self.time_count = self.time_count+1
-        if self.time_count > 1000:
-            return False
+            if np.sum(self.counts, axis = 0)[0]%1000 == 0:
+                plt.savefig('./result_tweets/politicians.png')        
+            
+            plt.pause(1e-17)
+            
+            for sub_a in a: sub_a.cla()
+            
+            for i in range(len(a)):
+                f.write("accuracy for " + str(i) + ":"+ str(1-np.sqrt(((self.counts[:, i] - all_val[:,i]) ** 2).mean())/(np.max(all_val[:,i]) - np.min(all_val[:,i]) ))+ "\n")
+                f.write("memory Consumption" + str(sys.getsizeof(csketch)) + "\n")
+            print(np.sum(self.counts, axis = 0))            
+            # time.sleep(0.01)
+
+        print('elapsed time: ', time.time()-track_start)
+
+        # self.time_count = self.time_count+1
+        # if self.time_count > 1000:
+        #     return False
 
 if __name__ == '__main__':
 
@@ -132,14 +133,15 @@ if __name__ == '__main__':
     outf = open("./tweets.txt", "w+")
 
     f = open("out.txt", "w")
-    f.write("settings: episilon" + str(epsilon) + "\n")
+    # f.write("settings: episilon" + str(epsilon) + "\n")
+
     plt.show()
     fig, a =  plt.subplots(ch, 1)
     print('node starting to track')
-    start = time.time()
+    track_start = time.time()
     while True:
         try:
-            myStream.filter(track=topics)
+            myStream.filter(track=topics)   
         except:
             continue
     

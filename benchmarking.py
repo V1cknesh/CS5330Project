@@ -43,7 +43,7 @@ if __name__ == '__main__':
             else:
                 cs_counter = CountMedianSketch(n, ch)
 
-            m = 1000000
+            m = 1000
             start = time.time()
             for i in range(m):
                 x = np.clip(int(np.random.normal(n / 2, n / 7, 1)), 0, n - 1)
