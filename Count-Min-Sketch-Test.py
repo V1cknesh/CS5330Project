@@ -20,6 +20,8 @@ for packet in capture.sniff_continuously(packet_count=m):
 
     try:
         x_src = int(int(packet['udp'].srcport) - 5000)
+        print(x_src)
+        print(c_src)
         c_src = np.array([int(packet['ip'].len),0])
         
         x_dst = int(int(packet['udp'].dstport) - 5000)
